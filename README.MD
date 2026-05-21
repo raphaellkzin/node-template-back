@@ -4,12 +4,11 @@
 
 ## Inicializa banco de dados
 ```docker-compose -f docker-compose.dev.yml up -d```
-E preencha todo as variáveis de ambiente
-
-## Inicializa banco de dados
-```docker-compose -f docker-compose.dev.yml up -dado```
 ```pnpm prisma db push```
 ```pnpm db:seed```
+
+Preencha todas as variáveis de ambiente
+
 
 ## Inicializa APP
 ```pnpm dev```
