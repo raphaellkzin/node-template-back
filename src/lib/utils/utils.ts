@@ -13,3 +13,7 @@ export const verifySaltHash = async ({
 }) => {
   return await argon2.verify(hashed, value);
 };
+
+export const timeSleep = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
