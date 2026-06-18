@@ -1,4 +1,5 @@
-// Adicionamos <T> para capturar o tipo do dado de entrada
+import { AppError } from "./appError";
+
 export const sucessHandlerResponse = <T>(
   data: T,
 ): { error: boolean; data: T } => {
@@ -6,6 +7,39 @@ export const sucessHandlerResponse = <T>(
     error: false,
     data,
   };
+};
+
+export const successHandlerResponse = sucessHandlerResponse;
+
+const prismaErrorMap: Record<
+  string,
+  { code: "CONFLICT" | "NOT_FOUND" | "BAD_REQUEST" | "INTERNAL_ERROR"; message: string; statusCode: number }
+> = {
+  P2000: {
+    code: "BAD_REQUEST",
+    message: "Valor fornecido e muito longo para o campo",
+    statusCode: 400,
+  },
+  P2001: {
+    code: "NOT_FOUND",
+    message: "Registro nao encontrado",
+    statusCode: 404,
+  },
+  P2002: {
+    code: "CONFLICT",
+    message: "Ja existe uma entidade com essas propriedades unicas",
+    statusCode: 409,
+  },
+  P2003: {
+    code: "BAD_REQUEST",
+    message: "Violacao de chave estrangeira",
+    statusCode: 400,
+  },
+  P2025: {
+    code: "NOT_FOUND",
+    message: "Registro nao encontrado",
+    statusCode: 404,
+  },
 };
 
 export const failedHandlerResponse = ({
@@ -23,214 +57,31 @@ export const failedHandlerResponse = ({
     | "LINKING"
     | "UPDATING"
     | "LISTING";
-  error: any;
+  error: unknown;
   entities?: string[];
-}): { message?: string; type?: string; error: any } => {
-  if (error.code) {
-    switch (error.code) {
-      case "P2000":
-        return {
-          message: "Valor fornecido é muito longo para o campo",
-          error,
-          type,
-        };
+}): AppError => {
+  const prismaCode =
+    typeof error === "object" && error !== null && "code" in error
+      ? String(error.code)
+      : null;
 
-      case "P2001":
-        return {
-          message: "Registro não encontrado",
-          error,
-          type,
-        };
+  if (prismaCode) {
+    const mapped = prismaErrorMap[prismaCode] ?? {
+      code: "INTERNAL_ERROR" as const,
+      message: "Erro desconhecido no banco de dados",
+      statusCode: 500,
+    };
 
-      case "P2002":
-        return {
-          message: "Já existe uma entidade com essas propriedades únicas",
-          error,
-          type,
-        };
-
-      case "P2003":
-        return {
-          message: "Violação de chave estrangeira",
-          error,
-          type,
-        };
-
-      case "P2004":
-        return {
-          message: "Falha em restrição do banco de dados",
-          error,
-          type,
-        };
-
-      case "P2005":
-        return {
-          message: "Valor inválido para o campo",
-          error,
-          type,
-        };
-
-      case "P2006":
-        return {
-          message: "Valor fornecido não é válido para o campo",
-          error,
-          type,
-        };
-
-      case "P2007":
-        return {
-          message: "Erro na validação de dados",
-          error,
-          type,
-        };
-
-      case "P2008":
-        return {
-          message: "Falha ao interpretar a query",
-          error,
-          type,
-        };
-
-      case "P2009":
-        return {
-          message: "Falha ao validar a query",
-          error,
-          type,
-        };
-
-      case "P2010":
-        return {
-          message: "Erro na execução da query",
-          error,
-          type,
-        };
-
-      case "P2011":
-        return {
-          message: "Violação de constraint NOT NULL",
-          error,
-          type,
-        };
-
-      case "P2012":
-        return {
-          message: "Campo obrigatório ausente",
-          error,
-          type,
-        };
-
-      case "P2013":
-        return {
-          message: "Argumento obrigatório ausente",
-          error,
-          type,
-        };
-
-      case "P2014":
-        return {
-          message: "Relacionamento inválido entre registros",
-          error,
-          type,
-        };
-
-      case "P2015":
-        return {
-          message: "Registro relacionado não encontrado",
-          error,
-          type,
-        };
-
-      case "P2016":
-        return {
-          message: "Erro na interpretação da query",
-          error,
-          type,
-        };
-
-      case "P2017":
-        return {
-          message: "Os registros não estão conectados",
-          error,
-          type,
-        };
-
-      case "P2018":
-        return {
-          message: "Registro necessário não encontrado",
-          error,
-          type,
-        };
-
-      case "P2019":
-        return {
-          message: "Erro de entrada",
-          error,
-          type,
-        };
-
-      case "P2020":
-        return {
-          message: "Valor fora do intervalo permitido",
-          error,
-          type,
-        };
-
-      case "P2021":
-        return {
-          message: "Tabela não encontrada no banco de dados",
-          error,
-          type,
-        };
-
-      case "P2022":
-        return {
-          message: "Coluna não encontrada",
-          error,
-          type,
-        };
-
-      case "P2023":
-        return {
-          message: "Erro na conversão de dados",
-          error,
-          type,
-        };
-
-      case "P2024":
-        return {
-          message: "Timeout na conexão com o banco de dados",
-          error,
-          type,
-        };
-
-      case "P2025":
-        return {
-          message: "Operação falhou pois o registro não foi encontrado",
-          error,
-          type,
-        };
-
-      default:
-        return {
-          message: "Erro desconhecido no banco de dados",
-          error,
-          type,
-        };
-    }
+    return new AppError(mapped);
   }
 
-  if (error.message && !message) {
-    message = error.message;
-  }
-
-  return {
-    error,
+  return new AppError({
+    code: "UNPROCESSABLE_ENTITY",
     message:
       typeof error === "string"
         ? error
-        : message
-          ? message
-          : `Não foi possível completar ${type} ${entities?.join(", ")}`,
-    type,
-  };
+        : (message ??
+          `Nao foi possivel completar ${type ?? "ANY"} ${entities?.join(", ") ?? ""}`),
+    statusCode: 422,
+  });
 };

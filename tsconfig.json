@@ -12,11 +12,14 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "moduleResolution": "node16",
+    "types": ["node"],
+    "forceConsistentCasingInFileNames": true,
     "paths": {
       "@plugins/*": ["./src/lib/plugins/*"],
       "@utils/*": ["./src/lib/utils/*"],
       "@modules/*": ["./src/modules/*"],
       "@db/*": ["./src/db/*"]
     }
-  }
+  },
+  "include": ["src/**/*.ts", "prisma/**/*.ts", "tests/**/*.ts", "vitest.config.ts"]
 }

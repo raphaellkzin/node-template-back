@@ -1,22 +1,26 @@
 import { PrismaClient } from "../../db/generated/prisma/client";
 
+export interface HandlerContext {
+  prisma: PrismaClient;
+}
+
 export interface ICreateEntityHandler<T> {
   data: T;
-  prisma: PrismaClient;
+  context: HandlerContext;
 }
 
 export interface IUpdateEntityHandler<T, Y> {
   data: T;
   where: Y;
-  prisma: PrismaClient;
+  context: HandlerContext;
 }
 export interface IViewEntityHandler<T> {
-  prisma: PrismaClient;
+  context: HandlerContext;
   where: T;
 }
 
 export interface IListEntitiesHandler<T> {
-  prisma: PrismaClient;
+  context: HandlerContext;
   cursor?:
     | {
         id: string;

@@ -9,12 +9,12 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postges_main_data:/var/lib/postgresql/data
+      - postgres_main_data:/var/lib/postgresql/data
     networks:
       - app_network
 
 volumes:
-  postges_main_data:
+  postgres_main_data:
 
 networks:
   app_network:

@@ -1,11 +1,20 @@
 {
   "name": "node-back-22",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Fastify + TypeScript + Prisma backend template.",
+  "main": "dist/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx --watch src/app.ts",
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "eslint . && node scripts/check-architecture.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts"
   },
   "keywords": [],
@@ -27,9 +36,14 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@types/node": "^25.9.1",
     "@types/pg": "^8.20.0",
+    "eslint": "^9.39.1",
+    "prettier": "^3.7.4",
     "tsx": "^4.22.3",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.49.0",
+    "vitest": "^4.0.15"
   }
 }

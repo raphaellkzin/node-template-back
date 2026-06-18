@@ -1,6 +1,6 @@
-import { z } from 'zod';
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { jsonResponse } from './jsonResponse';
+import { z } from "zod";
+import { FastifyReply, FastifyRequest } from "fastify";
+import { jsonResponse } from "./jsonResponse";
 
 /**
  * Valida o corpo da requisição usando um schema Zod.
@@ -13,7 +13,8 @@ export function validateBody<T extends z.ZodTypeAny>(schema: T) {
       jsonResponse.error({
         reply,
         data: z.flattenError(result.error).fieldErrors,
-        message: 'Validation error!',
+        message: "Validation error",
+        statusCode: 400,
       });
       return;
     }
@@ -30,7 +31,8 @@ export function validateParams<T extends z.ZodTypeAny>(schema: T) {
     const result = schema.safeParse(request.params);
     if (!result.success) {
       reply.code(400).send({
-        message: 'Erro de validação nos parâmetros',
+        success: false,
+        message: "Validation error",
         errors: result.error.flatten().fieldErrors,
       });
       return;
@@ -47,7 +49,8 @@ export function validateQuery<T extends z.ZodTypeAny>(schema: T) {
     const result = schema.safeParse(request.query);
     if (!result.success) {
       reply.code(400).send({
-        message: 'Erro de validação na query',
+        success: false,
+        message: "Validation error",
         errors: result.error.flatten().fieldErrors,
       });
       return;

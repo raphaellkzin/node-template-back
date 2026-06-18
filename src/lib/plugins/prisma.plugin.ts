@@ -1,22 +1,23 @@
-import { prismaDbIndex } from "../../db/prisma.db";
+import { createPrismaClient } from "../../db/prisma.db";
 import fp from "fastify-plugin";
 import { PrismaClient } from "../../db/generated/prisma/client";
+import { HandlerContext } from "../utils/handler.dto";
 
 declare module "fastify" {
   interface FastifyInstance {
     prisma: PrismaClient;
+    handlerContext: HandlerContext;
   }
 }
 
-const prisma = prismaDbIndex();
-
 export const prismaPlugin = fp(async (app) => {
+  const { prisma, pool } = createPrismaClient();
+
   app.decorate("prisma", prisma);
+  app.decorate("handlerContext", { prisma });
 
-  // console.log('')
-
-  // Fecha conexão ao desligar o servidor
   app.addHook("onClose", async (app) => {
     await app.prisma.$disconnect();
+    await pool.end();
   });
 });

@@ -1,24 +1,23 @@
-import { PrismaClient } from "../../db/generated/prisma/client";
+import { AppError } from "../../lib/utils/appError";
+import { HandlerContext } from "../../lib/utils/handler.dto";
 import { getUserHandler } from "../user/handlers/user.handler";
 import { verifySaltHash } from "../../lib/utils/utils";
 
 export class AuthService {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly context: HandlerContext) {}
 
   public async verifyUserLogin({
     password,
     username,
-    prisma = this.prisma,
   }: {
     username: string;
     password: string;
-    prisma?: PrismaClient;
   }) {
     try {
       const {
         data: { password: userPass, ...restUser },
       } = await getUserHandler({
-        prisma,
+        context: this.context,
         select: { username: true, password: true, id: true },
         where: {
           username: username,
@@ -26,12 +25,20 @@ export class AuthService {
       });
 
       if (!(await verifySaltHash({ hashed: userPass, value: password }))) {
-        throw { message: "Usuário ou senha inválidos" };
+        throw new AppError({
+          code: "UNAUTHORIZED",
+          message: "Usuario ou senha invalidos",
+          statusCode: 401,
+        });
       }
 
       return restUser;
-    } catch (error) {
-      throw error;
+    } catch {
+      throw new AppError({
+        code: "UNAUTHORIZED",
+        message: "Usuario ou senha invalidos",
+        statusCode: 401,
+      });
     }
   }
 }

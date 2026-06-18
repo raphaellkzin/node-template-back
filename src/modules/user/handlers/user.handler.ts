@@ -6,12 +6,12 @@ import { IViewUser } from "../user.dto";
 import { Prisma } from "../../../db/generated/prisma/client";
 
 export const getUserHandler = async <S extends Prisma.UserSelect>({
-  prisma,
+  context,
   select,
   where,
 }: IViewUser<S>) => {
   try {
-    const user = await prisma.user.findFirstOrThrow({
+    const user = await context.prisma.user.findUniqueOrThrow({
       where,
       select,
     });

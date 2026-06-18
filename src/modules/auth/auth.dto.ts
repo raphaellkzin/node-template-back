@@ -1,9 +1,8 @@
 import z from "zod";
 
 export const loginRequestSchema = z.object({
-  // PODE SER CPF OU EMAIL
-  username: z.string(),
-  password: z.string(),
+  username: z.string().min(1),
+  password: z.string().min(1),
 });
 
 export type ILoginRequest = z.infer<typeof loginRequestSchema>;

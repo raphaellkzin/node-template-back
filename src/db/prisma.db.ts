@@ -1,22 +1,17 @@
-import "dotenv/config";
 import { PrismaClient } from "./generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
+import { env } from "../lib/config/env";
 
-// 1. Crie a instância do Pool do 'pg' passando a URL
-export const prismaPool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
-});
-
-// 2. Passe o pool para o adaptador do Prisma
-const adapter = new PrismaPg(prismaPool);
-
-export const prismaDbIndex = () => {
-  // 3. Agora o Prisma usará o adaptador corretamente
+export const createPrismaClient = () => {
+  const pool = new pg.Pool({
+    connectionString: env.DATABASE_URL,
+  });
+  const adapter = new PrismaPg(pool);
   const prisma = new PrismaClient({
     adapter,
-    log: ["info"],
+    log: env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
 
-  return prisma;
+  return { prisma, pool };
 };

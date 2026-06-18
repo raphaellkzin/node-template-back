@@ -2,11 +2,12 @@ import { buildResponseSchema } from "../../lib/utils/swaggerSchemas";
 import { validateBody } from "../../lib/utils/zodResolver";
 import { FastifyInstance } from "fastify";
 import { loginRequestSchema } from "./auth.dto";
+import { ILoginRequest } from "./auth.dto";
 import { AuthService } from "./auth.service";
 import { jsonResponse } from "../../lib/utils/jsonResponse";
 
 export const v1AuthController = (app: FastifyInstance) => {
-  const authService = new AuthService(app.prisma);
+  const authService = new AuthService(app.handlerContext);
 
   app.post(
     "/login",
@@ -52,7 +53,7 @@ export const v1AuthController = (app: FastifyInstance) => {
     },
     async (req, reply) => {
       try {
-        const { username, password } = req.body as any;
+        const { username, password } = req.body as ILoginRequest;
 
         const user = await authService.verifyUserLogin({ password, username });
 
@@ -63,9 +64,9 @@ export const v1AuthController = (app: FastifyInstance) => {
           },
         );
 
-        return jsonResponse.success({ reply, data: { token } });
-      } catch (error: any) {
-        return jsonResponse.error({ reply, ...error });
+        return jsonResponse.success({ reply, data: { token, userId: user.id } });
+      } catch (error) {
+        return jsonResponse.fromError({ reply, error });
       }
     },
   );
@@ -75,9 +76,9 @@ export const v1AuthController = (app: FastifyInstance) => {
     { preHandler: [app.authenticate] },
     async (req, reply) => {
       try {
-        return req.user;
-      } catch (error: any) {
-        return jsonResponse.error({ reply, ...error });
+        return jsonResponse.success({ reply, data: req.user });
+      } catch (error) {
+        return jsonResponse.fromError({ reply, error });
       }
     },
   );

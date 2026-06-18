@@ -1,11 +1,15 @@
-import { prismaDbIndex, prismaPool } from "../src/db/prisma.db";
+import { createPrismaClient } from "../src/db/prisma.db";
 import { createSaltHash } from "../src/lib/utils/utils";
 
-const prisma = prismaDbIndex();
+const { prisma, pool } = createPrismaClient();
 
 export default async function main() {
-  const user = await prisma.user.create({
-    data: {
+  await prisma.user.upsert({
+    where: {
+      username: "admin@adm.com",
+    },
+    update: {},
+    create: {
       username: "admin@adm.com",
       password: await createSaltHash("1234"),
     },
@@ -15,13 +19,13 @@ export default async function main() {
 main()
   .then(async () => {
     await prisma.$disconnect();
-    await prismaPool.end();
+    await pool.end();
 
-    console.log("Seed done!");
+    process.stdout.write("Seed done!\n");
   })
   .catch(async (e) => {
     console.error(e);
     await prisma.$disconnect();
-    await prismaPool.end();
+    await pool.end();
     process.exit(1);
   });

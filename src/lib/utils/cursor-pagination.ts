@@ -1,7 +1,7 @@
 type CursorInput<T> = {
   data: T[];
   take: number;
-  getCursor: (item: T) => Record<string, any>;
+  getCursor: (item: T) => Record<string, unknown>;
 };
 
 type CursorOutput<T> = {
@@ -11,11 +11,11 @@ type CursorOutput<T> = {
   nextCursor: string | null;
 };
 
-export const encodeCursor = (cursor: Record<string, any>) => {
+export const encodeCursor = (cursor: Record<string, unknown>) => {
   return Buffer.from(JSON.stringify(cursor)).toString("base64");
 };
 
-export const decodeCursor = <T = any>(cursor: string): T => {
+export const decodeCursor = <T = unknown>(cursor: string): T => {
   return JSON.parse(Buffer.from(cursor, "base64").toString("utf-8"));
 };
 
